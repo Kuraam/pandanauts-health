@@ -40,6 +40,13 @@ describe('evaluate', () => {
     expect(evaluate(h, { ...MISSIONS.iss, gravity: 1 }).alerts.some((a) => a.id === 'trend-exercise')).toBe(false);
   });
 
+  it('raises a critical shelter alert during a solar particle event', () => {
+    const g = evaluate([healthy(1), healthy(2), healthy(3)], MISSIONS.moon, { solarEvent: true });
+    expect(g.overall).toBe('critical');
+    expect(g.alerts[0].id).toBe('event-solar-storm');
+    expect(g.alerts[0].actions.join(' ')).toMatch(/shelter/i);
+  });
+
   it('simulated demo history produces something to watch', () => {
     const g = evaluate(simulateHistory(120), MISSIONS.iss);
     expect(g.overall).not.toBe('normal');

@@ -14,6 +14,8 @@ interface Props {
   mission: Mission;
   missionDay: number;
   avgExerciseMin: number;
+  eventDoseMsv?: number;
+  solarEvent?: boolean;
 }
 
 function Meter({ frac, color }: { frac: number; color: string }) {
@@ -24,8 +26,8 @@ function Meter({ frac, color }: { frac: number; color: string }) {
   );
 }
 
-export function SpaceRisks({ mission, missionDay, avgExerciseMin }: Props) {
-  const dose = cumulativeDose(mission, missionDay);
+export function SpaceRisks({ mission, missionDay, avgExerciseMin, eventDoseMsv = 0, solarEvent = false }: Props) {
+  const dose = cumulativeDose(mission, missionDay, eventDoseMsv);
   const bone = boneLossPercent(mission, missionDay, avgExerciseMin);
   const muscle = muscleRisk(mission, missionDay, avgExerciseMin);
   const rs = radiationStatus(dose);
@@ -43,6 +45,11 @@ export function SpaceRisks({ mission, missionDay, avgExerciseMin }: Props) {
         <div className="row spread"><span className="name">☢ Radiation dose</span><StatusPill status={rs} /></div>
         <span className="value">{dose.toFixed(0)}<span className="unit">mSv of {CAREER_LIMIT_MSV} career limit</span></span>
         <Meter frac={dose / CAREER_LIMIT_MSV} color="var(--orange)" />
+        {solarEvent && (
+          <span className="tag" style={{ color: 'var(--crit)', borderColor: 'rgba(255,92,92,.5)', justifySelf: 'start' }}>
+            ☀ SOLAR STORM +{eventDoseMsv} mSv (simulated)
+          </span>
+        )}
         <span className="range">{mission.radiationPerDay} mSv/day · {mission.radiationSource}</span>
       </div>
 

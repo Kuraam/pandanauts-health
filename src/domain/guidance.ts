@@ -29,9 +29,33 @@ export interface Guidance {
 
 const avg = (xs: number[]) => (xs.length ? xs.reduce((a, b) => a + b, 0) / xs.length : NaN);
 
-export function evaluate(history: CheckIn[], mission: Mission): Guidance {
+export interface EvaluateOptions {
+  /** A solar particle event (radiation storm) is in progress. */
+  solarEvent?: boolean;
+}
+
+export function evaluate(history: CheckIn[], mission: Mission, opts: EvaluateOptions = {}): Guidance {
   const alerts: Alert[] = [];
   const today = history.at(-1);
+
+  // Environmental emergency first: a solar particle event can deliver in hours
+  // the dose of months. Shielding is the countermeasure (NASA Orion/Artemis
+  // storm-shelter procedure: crew pack mass and water around themselves).
+  if (opts.solarEvent) {
+    alerts.push({
+      id: 'event-solar-storm',
+      status: 'critical',
+      title: 'Solar particle event: take shelter',
+      detail:
+        'A solar storm is sending high-energy protons. Dose rate is many times normal. Shielding (water, food, equipment mass) cuts exposure sharply.',
+      actions: [
+        'Move to the storm shelter now and stay until the all-clear.',
+        'Wear your radiation vest if one is available.',
+        'Postpone all EVAs and surface activity.',
+        'Read your personal dosimeter every hour and log it.',
+      ],
+    });
+  }
 
   if (today) {
     for (const [id, value] of Object.entries(today.readings) as [IndicatorId, number][]) {

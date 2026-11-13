@@ -27,6 +27,10 @@ export function readiness(alerts: Alert[], longTerm: Status[]): Readiness {
   }
   for (const s of longTerm) if (s !== 'normal') score -= PENALTY.longTerm[s];
   score = Math.max(0, Math.min(100, score));
+  // Safety override: any critical finding means duties must be limited,
+  // whatever the points total says.
+  const anyCritical = alerts.some((a) => a.status === 'critical') || longTerm.includes('critical');
+  if (anyCritical) score = Math.min(score, 59);
   if (score >= 80) return { score, status: 'normal', label: 'Mission ready' };
   if (score >= 60) return { score, status: 'watch', label: 'Ready with cautions' };
   return { score, status: 'critical', label: 'Limit duties, follow actions' };

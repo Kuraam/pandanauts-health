@@ -14,8 +14,14 @@ describe('readiness', () => {
     expect(r.score).toBe(100 - 6 - 5 - 4);
   });
   it('maps score bands to status', () => {
-    expect(readiness([alert('reading-a', 'critical'), alert('reading-b', 'critical')], []).status).toBe('watch'); // 64
-    expect(readiness([alert('reading-a', 'critical'), alert('reading-b', 'critical'), alert('reading-c', 'watch')], []).status).toBe('critical'); // 58
+    expect(readiness([alert('reading-a', 'watch')], []).status).toBe('normal'); // 94
+    expect(readiness(Array.from({ length: 4 }, (_, i) => alert(`reading-${i}`, 'watch')), []).status).toBe('watch'); // 76
+  });
+  it('any critical finding forces "limit duties" regardless of points', () => {
+    const r = readiness([alert('reading-spo2', 'critical')], []); // points alone would be 82
+    expect(r.status).toBe('critical');
+    expect(r.score).toBeLessThanOrEqual(59);
+    expect(readiness([], ['critical']).status).toBe('critical');
   });
   it('never goes below 0', () => {
     expect(readiness(Array.from({ length: 10 }, (_, i) => alert(`reading-${i}`, 'critical')), []).score).toBe(0);
