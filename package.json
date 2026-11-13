@@ -12,6 +12,7 @@
   "dependencies": {
     "@fontsource/barlow": "^5.2.8",
     "@fontsource/ibm-plex-mono": "^5.2.7",
+    "@mlc-ai/web-llm": "^0.2.86",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "recharts": "^2.15.3"

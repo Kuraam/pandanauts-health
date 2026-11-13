@@ -219,6 +219,19 @@ th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--lin
 th { font-family: var(--mono); font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
 tr:last-child td { border-bottom: 0; }
 
+/* ---------- AI coach ---------- */
+.coach { background: linear-gradient(135deg, rgba(255, 122, 26, 0.10), rgba(16, 23, 52, 0.75) 45%); }
+.coach-body { display: flex; gap: 14px; align-items: flex-start; }
+.coach-avatar { border-radius: 14px; flex: none; box-shadow: 0 0 0 1px rgba(255,122,26,.5), 0 0 22px rgba(255,122,26,.3); }
+.speech {
+  position: relative; padding: 12px 14px; border-radius: 4px 14px 14px 14px; line-height: 1.5;
+  background: rgba(10, 15, 36, 0.7); border: 1px solid rgba(255, 122, 26, 0.3); white-space: pre-wrap;
+}
+.caret { color: var(--orange); animation: pulse-dot 1s infinite; margin-left: 2px; }
+.meter { height: 8px; background: var(--navy-deep); border-radius: 4px; overflow: hidden; border: 1px solid var(--line); }
+.meter > div { height: 100%; background: linear-gradient(90deg, var(--orange), #ffb066); box-shadow: 0 0 12px var(--orange); transition: width .3s; }
+@media (max-width: 560px) { .coach-avatar { width: 40px; height: 40px; } }
+
 /* ---------- Helpers ---------- */
 .muted { color: var(--muted); }
 .small { font-size: 13px; }

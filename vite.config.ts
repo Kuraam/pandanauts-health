@@ -25,8 +25,19 @@ export default defineConfig({
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,png,svg,woff,woff2}'],
-        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
+        globPatterns: ['**/*.{js,css,html,png,svg,woff2}'],
+        // The AI coach's runtime (lib-*.js, ~2 MB gzipped) is NOT precached, so ordinary
+        // visitors don't download it. It's cached the first time someone activates the
+        // coach (which needs a connection anyway for the model), then works offline.
+        // WebLLM caches the model weights itself.
+        globIgnores: ['**/lib-*.js'],
+        runtimeCaching: [
+          {
+            urlPattern: /\/assets\/lib-[^/]*\.js$/,
+            handler: 'CacheFirst',
+            options: { cacheName: 'ai-coach-runtime', expiration: { maxEntries: 4 } },
+          },
+        ],
         navigateFallback: '/index.html',
       },
     }),

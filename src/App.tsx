@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { AboutDialog } from './components/AboutDialog';
 import { BodyMap } from './components/BodyMap';
 import { CheckInForm } from './components/CheckInForm';
+import { CoachPanel } from './components/CoachPanel';
 import { HazardsPanel, type HazardState } from './components/HazardsPanel';
 import { IndicatorDetail } from './components/IndicatorDetail';
 import { IndicatorTiles } from './components/IndicatorTiles';
@@ -136,6 +137,8 @@ export default function App() {
         <ReadinessPanel readiness={ready} streak={checkInStreak} today={today} missionDay={missionDay} onCheckIn={openCheckIn} />
         <StatusHero guidance={guidance} onSelect={setSelected} />
       </div>
+
+      <CoachPanel guidance={guidance} readiness={ready} mission={mission} />
 
       <HazardsPanel mission={mission} state={hazards} doseMsv={dose} onSelect={setSelected} />
 
