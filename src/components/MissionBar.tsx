@@ -11,7 +11,7 @@ export function MissionBar({ mission, missionDay, onMission, onDay }: Props) {
   return (
     <header className="card row spread" style={{ padding: '12px 16px' }}>
       <div className="row">
-        <img src="/favicon.svg" alt="" width={40} height={40} />
+        <img src="/logo-mark.png" alt="Team Pandanauts logo" width={44} height={44} style={{ borderRadius: 10 }} />
         <div>
           <h1 style={{ fontSize: 20, fontWeight: 700 }}>
             Pandanauts <span style={{ color: 'var(--orange)' }}>Health</span>
