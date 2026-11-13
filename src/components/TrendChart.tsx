@@ -28,7 +28,7 @@ export function TrendChart({ id, history }: { id: IndicatorId; history: CheckIn[
   const hi = Math.ceil(Math.max(...values) + pad);
 
   return (
-    <div style={{ width: '100%', height: 220 }} role="img" aria-label={`${ind.name} trend over the last ${data.length} days`}>
+    <div className="glow-line" style={{ width: '100%', height: 240 }} role="img" aria-label={`${ind.name} trend over the last ${data.length} days`}>
       <ResponsiveContainer>
         <LineChart data={data} margin={{ top: 8, right: 12, bottom: 0, left: -12 }}>
           {ind.bands.map((b, i) => {

@@ -35,8 +35,8 @@ export function SpaceRisks({ mission, missionDay, avgExerciseMin }: Props) {
   return (
     <section className="card stack">
       <div className="row spread">
-        <h2 style={{ margin: 0 }}>Long-term space risks</h2>
-        <span className="tag" title="Real published rates combined with a simple illustrative model">📡 Published rates + model</span>
+        <h2 className="hud-title">Long-term exposure</h2>
+        <span className="tag" title="Real published rates combined with a simple illustrative model">📡 PUBLISHED RATES + MODEL</span>
       </div>
 
       <div className="tile" data-status={rs}>

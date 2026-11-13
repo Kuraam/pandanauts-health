@@ -4,12 +4,14 @@ import { CheckInForm } from './components/CheckInForm';
 import { IndicatorDetail } from './components/IndicatorDetail';
 import { IndicatorTiles } from './components/IndicatorTiles';
 import { MissionBar } from './components/MissionBar';
+import { ReadinessPanel } from './components/ReadinessPanel';
 import { SpaceRisks } from './components/SpaceRisks';
 import { StatusHero } from './components/StatusHero';
 import { evaluate } from './domain/guidance';
 import { INDICATOR_LIST, INDICATORS, type BodyRegion, type IndicatorId, type Status } from './domain/indicators';
 import { MISSIONS, type MissionId } from './domain/missions';
 import { boneLossPercent, boneStatus, cumulativeDose, muscleRisk, muscleStatus, radiationStatus } from './domain/models';
+import { readiness, streak } from './domain/readiness';
 import { simulateHistory, type CheckIn } from './domain/simulate';
 import { classify, worst } from './domain/status';
 import { usePersistent } from './store';
@@ -33,24 +35,36 @@ export default function App() {
     return last7.length ? last7.reduce((s, c) => s + c.exerciseMin, 0) / last7.length : 0;
   }, [recent]);
 
+  // Long-term risk statuses feed both the body map and the readiness score.
+  const longTerm = useMemo(() => ({
+    radiation: radiationStatus(cumulativeDose(mission, missionDay)),
+    bone: boneStatus(boneLossPercent(mission, missionDay, avgExercise)),
+    muscle: muscleStatus(muscleRisk(mission, missionDay, avgExercise)),
+  }), [mission, missionDay, avgExercise]);
+
+  const ready = useMemo(() => readiness(guidance.alerts, Object.values(longTerm)), [guidance, longTerm]);
+  const checkInStreak = useMemo(() => streak(history, missionDay), [history, missionDay]);
+
   const statusByRegion = useMemo(() => {
     const by: Record<BodyRegion, Status[]> = { head: [], heart: [], lungs: [], blood: [], musculoskeletal: [], wholeBody: [] };
     for (const ind of INDICATOR_LIST) {
       const v = today?.readings[ind.id];
       if (v !== undefined) by[ind.region].push(classify(ind.id, v));
     }
-    by.wholeBody.push(radiationStatus(cumulativeDose(mission, missionDay)));
-    by.musculoskeletal.push(
-      boneStatus(boneLossPercent(mission, missionDay, avgExercise)),
-      muscleStatus(muscleRisk(mission, missionDay, avgExercise)),
-    );
+    by.wholeBody.push(longTerm.radiation);
+    by.musculoskeletal.push(longTerm.bone, longTerm.muscle);
     return Object.fromEntries(Object.entries(by).map(([k, v]) => [k, worst(v)])) as Record<BodyRegion, Status>;
-  }, [today, mission, missionDay, avgExercise]);
+  }, [today, longTerm]);
 
   const selectRegion = (r: BodyRegion) => {
     setRegion(r);
     const first = INDICATOR_LIST.find((i) => i.region === r);
     if (first) setSelected(first.id);
+  };
+
+  const openCheckIn = () => {
+    setCheckingIn(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const saveCheckIn = (c: CheckIn) => {
@@ -68,38 +82,32 @@ export default function App() {
     <div className="app">
       <MissionBar mission={mission} missionDay={missionDay} onMission={setMissionId} onDay={setMissionDay} />
 
-      <div className="row spread">
-        <p className="muted small">
-          Good day, astronaut. {today ? `Last check-in: mission day ${today.day}.` : 'No check-ins yet.'}
-        </p>
-        <div className="row">
-          <button className="btn small" onClick={resetDemo} title="Restore the simulated 30-day demo history">↺ Reset demo data</button>
-          <button className="btn btn-primary" onClick={() => setCheckingIn(true)}>＋ Daily check-in</button>
-        </div>
-      </div>
-
       {checkingIn && (
         <CheckInForm day={missionDay} previous={today} onSave={saveCheckIn} onCancel={() => setCheckingIn(false)} />
       )}
 
-      <div className="grid-main">
-        <div className="stack" style={{ gap: 16, alignContent: 'start' }}>
-          <BodyMap statusByRegion={statusByRegion} selected={region} onSelect={selectRegion} />
-          <SpaceRisks mission={mission} missionDay={missionDay} avgExerciseMin={avgExercise} />
-        </div>
-        <div className="stack" style={{ gap: 16, alignContent: 'start' }}>
-          <StatusHero guidance={guidance} onSelect={setSelected} />
-          {today && (
-            <IndicatorTiles readings={today.readings} selected={selected} onSelect={setSelected} source={today.source} />
-          )}
-          {selected && INDICATORS[selected] && <IndicatorDetail id={selected} history={recent} />}
-        </div>
+      <div className="band band-hero">
+        <ReadinessPanel readiness={ready} streak={checkInStreak} today={today} missionDay={missionDay} onCheckIn={openCheckIn} />
+        <StatusHero guidance={guidance} onSelect={setSelected} />
       </div>
 
-      <p className="disclaimer">
-        Decision aid for training and demonstration. Not a medical device. Thresholds are general adult ranges;
-        real missions use limits set by flight surgeons for each astronaut. Team Pandanauts · NASA Space Apps Challenge 2026.
-      </p>
+      <div className="band band-body">
+        <BodyMap statusByRegion={statusByRegion} selected={region} onSelect={selectRegion} />
+        <IndicatorTiles history={recent} selected={selected} onSelect={setSelected} />
+      </div>
+
+      <div className="band band-detail">
+        {selected && INDICATORS[selected] ? <IndicatorDetail id={selected} history={recent} /> : <div />}
+        <SpaceRisks mission={mission} missionDay={missionDay} avgExerciseMin={avgExercise} />
+      </div>
+
+      <footer className="stack" style={{ justifyItems: 'center', gap: 8 }}>
+        <button className="btn small" onClick={resetDemo} title="Restore the simulated 30-day demo history">↺ Reset demo data</button>
+        <p className="disclaimer">
+          Decision aid for training and demonstration. Not a medical device. Thresholds are general adult ranges;
+          real missions use limits set by flight surgeons for each astronaut. Team Pandanauts · NASA Space Apps Challenge 2026.
+        </p>
+      </footer>
     </div>
   );
 }

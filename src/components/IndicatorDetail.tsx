@@ -8,8 +8,12 @@ export function IndicatorDetail({ id, history }: { id: IndicatorId; history: Che
   return (
     <section className="card stack">
       <div className="row spread">
-        <h2 style={{ margin: 0 }}>{ind.name}: last {history.length} days</h2>
-        <span className="small muted">Shading: normal · watch · critical</span>
+        <h2 className="hud-title">{ind.name} · last {history.length} days</h2>
+        <span className="row small muted" style={{ gap: 10 }}>
+          <span><span style={{ color: 'var(--ok)' }}>■</span> normal</span>
+          <span><span style={{ color: 'var(--watch)' }}>■</span> watch</span>
+          <span><span style={{ color: 'var(--crit)' }}>■</span> critical</span>
+        </span>
       </div>
       <TrendChart id={id} history={history} />
       <div className="tiles" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', alignItems: 'start' }}>

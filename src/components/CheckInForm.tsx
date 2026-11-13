@@ -31,7 +31,7 @@ export function CheckInForm({ day, previous, onSave, onCancel }: Props) {
   return (
     <form className="card stack" onSubmit={submit}>
       <div className="row spread">
-        <h2 style={{ margin: 0 }}>Daily check-in · mission day {day}</h2>
+        <h2 className="hud-title">Daily check-in · mission day {day}</h2>
         <span className="small muted">Leave a field empty if you did not measure it.</span>
       </div>
       <div className="tiles">

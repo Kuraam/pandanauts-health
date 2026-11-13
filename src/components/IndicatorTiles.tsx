@@ -1,43 +1,41 @@
 import { INDICATOR_LIST, type IndicatorId } from '../domain/indicators';
-import type { Readings } from '../domain/simulate';
+import type { CheckIn } from '../domain/simulate';
 import { classify } from '../domain/status';
-import { StatusPill } from './StatusPill';
+import { Sparkline } from './Sparkline';
+import { STATUS_COLOR, StatusPill } from './StatusPill';
 
 interface Props {
-  readings: Readings;
+  history: CheckIn[];
   selected: IndicatorId | null;
   onSelect: (id: IndicatorId) => void;
-  source: 'simulated' | 'manual';
 }
 
-export function IndicatorTiles({ readings, selected, onSelect, source }: Props) {
+export function IndicatorTiles({ history, selected, onSelect }: Props) {
+  const today = history.at(-1);
+  const last14 = history.slice(-14);
   return (
-    <section className="card">
-      <div className="row spread" style={{ marginBottom: 12 }}>
-        <h2 style={{ margin: 0 }}>Vital signs today</h2>
-        <span className="tag">{source === 'manual' ? '✍ Your check-in' : '🧪 Simulated sensor data'}</span>
+    <section className="card stack">
+      <div className="row spread">
+        <h2 className="hud-title">Vital telemetry</h2>
+        <span className="tag">{today?.source === 'manual' ? '✍ YOUR CHECK-IN' : '🧪 SIMULATED SENSORS'}</span>
       </div>
       <div className="tiles">
         {INDICATOR_LIST.map((ind) => {
-          const v = readings[ind.id];
+          const v = today?.readings[ind.id];
           const status = v === undefined ? null : classify(ind.id, v);
+          const series = last14.map((c) => c.readings[ind.id]).filter((x): x is number => x !== undefined);
           return (
-            <button
-              key={ind.id}
-              className="tile"
-              data-status={status ?? undefined}
-              aria-pressed={selected === ind.id}
-              onClick={() => onSelect(ind.id)}
-            >
+            <button key={ind.id} className="tile" data-status={status ?? undefined}
+              aria-pressed={selected === ind.id} onClick={() => onSelect(ind.id)}>
               <span className="name">{ind.name}</span>
-              <span className="value">
-                {v ?? '—'}
-                <span className="unit">{ind.unit}</span>
+              <span className="row spread" style={{ gap: 6 }}>
+                <span className="value">
+                  {v ?? '—'}<span className="unit">{ind.unit}</span>
+                </span>
+                {status && <StatusPill status={status} />}
               </span>
-              <span className="row spread">
-                {status ? <StatusPill status={status} /> : <span className="small muted">Not measured</span>}
-                <span className="range">normal {ind.normalLabel}</span>
-              </span>
+              <Sparkline values={series} color={status ? STATUS_COLOR[status] : 'var(--muted)'} />
+              <span className="range">NORMAL {ind.normalLabel}</span>
             </button>
           );
         })}
